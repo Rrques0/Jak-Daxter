@@ -1,0 +1,22 @@
+{
+  "name": "daxter-browser",
+  "version": "1.0.0",
+  "description": "Jak & Daxter themed download browser",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "0.27.2",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "express": "^4.18.2"
+  }
+}
