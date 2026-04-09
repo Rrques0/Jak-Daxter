@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daxter Browse — Dark Eco Download Browser</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --eco-dark: #0a0e0a;
+    --eco-deep: #060c06;
+    --eco-void: #040804;
+    --amber: #e8a020;
+    --amber-bright: #ffcc44;
+    --amber-dim: #7a5010;
+    --teal: #1ad4c8;
+    --teal-dim: #0a6060;
+    --teal-glow: #22ffee;
+    --green-eco: #2eff60;
+    --green-dim: #0a3a1a;
+    --precursor: #c87830;
+    --ruin: #1a2a1a;
+    --card-bg: #0d160d;
+    --card-border: #1e3a1e;
+    --text-main: #d4c8a0;
+    --text-dim: #6a7a5a;
+    --text-bright: #f0e8c0;
+    --shadow-amber: 0 0 20px rgba(232,160,32,0.3);
+    --shadow-teal: 0 0 20px rgba(26,212,200,0.3);
+    --shadow-eco: 0 0 40px rgba(46,255,96,0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--eco-void);
+    color: var(--text-main);
+    font-family: 'Crimson Pro', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* Animated dark eco background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 80%, rgba(10,60,10,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 20%, rgba(26,80,60,0.2) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 60% at 50% 50%, rgba(6,20,6,0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Precursor glyph overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(46,255,96,0.03) 60px),
+      repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(46,255,96,0.03) 60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .eco-particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--green-eco);
+    opacity: 0;
+    animation: floatParticle var(--dur, 8s) var(--delay, 0s) infinite ease-in-out;
+  }
+
+  @keyframes floatParticle {
+    0% { opacity: 0; transform: translateY(100vh) scale(0.5); }
+    10% { opacity: 0.6; }
+    80% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-10vh) scale(1.5) translateX(var(--drift, 20px)); }
+  }
+
+  /* Header */
+  header {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 48px 24px 32px;
+    border-bottom: 1px solid rgba(232,160,32,0.15);
+    background: linear-gradient(180deg, rgba(6,20,6,0.95) 0%, transparent 100%);
+  }
+
+  .logo-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 8px;
+  }
+
+  .eco-icon {
+    width: 52px;
+    height: 52px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .eco-icon svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px rgba(46,255,96,0.6));
+    animation: pulseEco 3s ease-in-out infinite;
+  }
+
+  @keyframes pulseEco {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(46,255,96,0.6)); }
+    50% { filter: drop-shadow(0 0 20px rgba(46,255,96,1)) drop-shadow(0 0 40px rgba(46,255,96,0.4)); }
+  }
+
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, var(--amber-bright) 0%, var(--amber) 40%, var(--precursor) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-top: 6px;
+    opacity: 0.8;
+  }
+
+  .daxter-quote {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-top: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Search bar area */
+  .search-zone {
+    position: relative;
+    z-index: 10;
+    max-width: 860px;
+    margin: 32px auto;
+    padding: 0 20px;
+  }
+
+  .search-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--amber-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 0;
+    position: relative;
+  }
+
+  .url-input {
+    flex: 1;
+    background: rgba(10,22,10,0.9);
+    border: 1px solid var(--amber-dim);
+    border-right: none;
+    color: var(--text-bright);
+    font-family: 'Crimson Pro', monospace;
+    font-size: 1rem;
+    padding: 14px 20px;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    border-radius: 3px 0 0 3px;
+    letter-spacing: 0.01em;
+  }
+
+  .url-input::placeholder { color: var(--text-dim); font-style: italic; }
+
+  .url-input:focus {
+    border-color: var(--amber);
+    box-shadow: var(--shadow-amber), inset 0 0 20px rgba(232,160,32,0.05);
+  }
+
+  .search-btn {
+    background: linear-gradient(135deg, #3a2000 0%, #6a3a00 50%, #3a2000 100%);
+    border: 1px solid var(--amber);
+    color: var(--amber-bright);
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    padding: 14px 28px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.25s;
+    border-radius: 0 3px 3px 0;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .search-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255,200,60,0.15), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.4s;
+  }
+
+  .search-btn:hover::before { transform: translateX(100%); }
+
+  .search-btn:hover {
+    box-shadow: var(--shadow-amber);
+    border-color: var(--amber-bright);
+    color: #fff;
+  }
+
+  .search-btn:active { transform: scale(0.98); }
+  .search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .preset-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .preset-chip {
+    background: rgba(26,60,26,0.5);
+    border: 1px solid rgba(46,255,96,0.15);
+    color: var(--teal);
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 5px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .preset-chip:hover {
+    background: rgba(26,80,26,0.7);
+    border-color: var(--teal);
+    box-shadow: 0 0 10px rgba(26,212,200,0.2);
+    color: var(--teal-glow);
+  }
+
+  /* Status bar */
+  .status-bar {
+    position: relative;
+    z-index: 10;
+    max-width: 860px;
+    margin: 0 auto 20px;
+    padding: 0 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-eco);
+    flex-shrink: 0;
+    display: none;
+  }
+
+  .status-dot.active {
+    display: block;
+    animation: blink 1s ease-in-out infinite;
+  }
+
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+
+  .status-count {
+    color: var(--amber);
+    font-weight: 700;
+  }
+
+  /* Page title */
+  .page-title-bar {
+    position: relative;
+    z-index: 10;
+    max-width: 1300px;
+    margin: 0 auto 24px;
+    padding: 0 24px;
+    display: none;
+  }
+
+  .page-title-bar.visible { display: block; }
+
+  .page-title-text {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--amber);
+    letter-spacing: 0.05em;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(232,160,32,0.2);
+  }
+
+  /* Filter bar */
+  .filter-bar {
+    position: relative;
+    z-index: 10;
+    max-width: 1300px;
+    margin: 0 auto 28px;
+    padding: 0 24px;
+    display: none;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .filter-bar.visible { display: flex; }
+
+  .filter-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .filter-input {
+    background: rgba(10,22,10,0.8);
+    border: 1px solid rgba(232,160,32,0.2);
+    color: var(--text-bright);
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    padding: 7px 14px;
+    outline: none;
+    border-radius: 2px;
+    transition: border-color 0.2s;
+    min-width: 220px;
+  }
+
+  .filter-input:focus { border-color: var(--amber-dim); }
+
+  .sort-select {
+    background: rgba(10,22,10,0.8);
+    border: 1px solid rgba(232,160,32,0.2);
+    color: var(--text-main);
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 7px 14px;
+    outline: none;
+    border-radius: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  /* Grid */
+  .grid-wrap {
+    position: relative;
+    z-index: 10;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+
+  /* Card */
+  .dl-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    animation: cardReveal 0.5s ease-out both;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .dl-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(232,160,32,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @keyframes cardReveal {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .dl-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6), var(--shadow-amber);
+    border-color: rgba(232,160,32,0.4);
+  }
+
+  .card-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 170px;
+    background: var(--ruin);
+    overflow: hidden;
+    border-bottom: 1px solid rgba(46,255,96,0.08);
+  }
+
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s, filter 0.4s;
+    filter: saturate(0.8) brightness(0.85);
+  }
+
+  .dl-card:hover .card-img {
+    transform: scale(1.06);
+    filter: saturate(1) brightness(1);
+  }
+
+  .card-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0a1a0a, #0d2010);
+  }
+
+  .card-img-placeholder svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.3;
+  }
+
+  .card-ext-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(6,20,6,0.85);
+    border: 1px solid var(--amber-dim);
+    color: var(--amber);
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    padding: 3px 7px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  .card-body {
+    padding: 14px 16px 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 0.03em;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-desc {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #1a3000, #2a5000);
+    border: 1px solid rgba(46,255,96,0.3);
+    color: var(--green-eco);
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    padding: 7px 14px;
+    text-decoration: none;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .card-link:hover {
+    background: linear-gradient(135deg, #2a5000, #3a7000);
+    box-shadow: 0 0 12px rgba(46,255,96,0.25);
+    border-color: var(--green-eco);
+    color: #fff;
+  }
+
+  .copy-btn {
+    background: rgba(26,42,26,0.6);
+    border: 1px solid rgba(232,160,32,0.2);
+    color: var(--amber-dim);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+    box-shadow: 0 0 8px rgba(232,160,32,0.2);
+  }
+
+  /* Empty / loading states */
+  .state-panel {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 80px 24px;
+  }
+
+  .state-glyph {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    opacity: 0.4;
+    animation: floatGlyph 4s ease-in-out infinite;
+  }
+
+  @keyframes floatGlyph {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .state-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.4rem;
+    color: var(--amber-dim);
+    margin-bottom: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .state-sub {
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 1rem;
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: none;
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+
+  .spinner.active { display: block; }
+
+  .spinner::before, .spinner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+  }
+
+  .spinner::before {
+    border-top-color: var(--amber);
+    animation: spin 1s linear infinite;
+  }
+
+  .spinner::after {
+    border-bottom-color: var(--teal);
+    animation: spin 1.5s linear infinite reverse;
+    inset: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Error */
+  .error-msg {
+    background: rgba(40,5,5,0.7);
+    border: 1px solid rgba(200,50,50,0.4);
+    color: #ff8080;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    padding: 12px 18px;
+    border-radius: 3px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* Footer */
+  footer {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid rgba(46,255,96,0.06);
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  footer span { color: var(--amber-dim); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--eco-deep); }
+  ::-webkit-scrollbar-thumb { background: var(--amber-dim); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--amber); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .items-grid { grid-template-columns: 1fr; }
+    .logo-wrap { flex-direction: column; gap: 10px; }
+    h1 { font-size: 1.4rem; }
+    .search-btn { padding: 14px 16px; font-size: 0.7rem; letter-spacing: 0.05em; }
+  }
+
+  /* Copy toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(10,30,10,0.95);
+    border: 1px solid var(--amber);
+    color: var(--amber-bright);
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    padding: 12px 20px;
+    border-radius: 3px;
+    z-index: 1000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s;
+    box-shadow: var(--shadow-amber);
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- Floating dark eco particles -->
+<div class="eco-particles" id="particles"></div>
+
+<header>
+  <div class="logo-wrap">
+    <div class="eco-icon">
+      <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="26" cy="26" r="24" stroke="#2eff60" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <circle cx="26" cy="26" r="16" stroke="#2eff60" stroke-width="1" opacity="0.5"/>
+        <path d="M26 10 L32 20 L26 18 L20 20 Z" fill="#2eff60" opacity="0.9"/>
+        <path d="M26 42 L32 32 L26 34 L20 32 Z" fill="#2eff60" opacity="0.6"/>
+        <path d="M10 26 L20 20 L18 26 L20 32 Z" fill="#2eff60" opacity="0.7"/>
+        <path d="M42 26 L32 20 L34 26 L32 32 Z" fill="#2eff60" opacity="0.5"/>
+        <circle cx="26" cy="26" r="4" fill="#2eff60"/>
+        <circle cx="26" cy="26" r="2" fill="#fff"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Daxter Browse</h1>
+      <div class="subtitle">Dark Eco Download Browser &nbsp;·&nbsp; Precursor Edition</div>
+    </div>
+  </div>
+  <div class="daxter-quote">"I'm not just cute — I'm also incredibly resourceful." — Daxter</div>
+</header>
+
+<section class="search-zone">
+  <label class="search-label">⬡ Feed the Oracle a URL</label>
+  <div class="search-row">
+    <input class="url-input" id="urlInput" type="url"
+      placeholder="https://ubuntu.com/download/desktop  or any download listing page…"
+      autocomplete="off" spellcheck="false" />
+    <button class="search-btn" id="scrapeBtn" onclick="doScrape()">
+      ⬡ Scan
+    </button>
+  </div>
+  <div class="error-msg" id="errMsg"></div>
+  <div class="preset-links">
+    <span class="preset-label" style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;align-self:center;">Try:</span>
+    <button class="preset-chip" onclick="loadPreset('https://ubuntu.com/download/flavours')">Ubuntu Flavours</button>
+    <button class="preset-chip" onclick="loadPreset('https://www.linuxmint.com/download.php')">Linux Mint</button>
+    <button class="preset-chip" onclick="loadPreset('https://www.microsoft.com/en-us/software-download/windows10')">Win 10 ISO</button>
+    <button class="preset-chip" onclick="loadPreset('https://www.ventoy.net/en/download.html')">Ventoy</button>
+    <button class="preset-chip" onclick="loadPreset('https://www.videolan.org/vlc/')">VLC Media</button>
+    <button class="preset-chip" onclick="loadPreset('https://www.7-zip.org/download.html')">7-Zip</button>
+  </div>
+</section>
+
+<div class="status-bar" id="statusBar">
+  <div class="status-dot" id="statusDot"></div>
+  <span id="statusText"></span>
+</div>
+
+<div class="page-title-bar" id="pageTitleBar">
+  <div class="page-title-text" id="pageTitleText"></div>
+</div>
+
+<div class="filter-bar" id="filterBar">
+  <span class="filter-label">⬡ Filter</span>
+  <input class="filter-input" id="filterInput" placeholder="Search results…" oninput="applyFilter()" />
+  <select class="sort-select" id="sortSelect" onchange="applyFilter()">
+    <option value="default">Sort: Default</option>
+    <option value="az">A → Z</option>
+    <option value="za">Z → A</option>
+    <option value="hasimg">Has Image First</option>
+  </select>
+  <span class="filter-label" id="countLabel"></span>
+</div>
+
+<main class="grid-wrap">
+  <div id="statePanel" class="state-panel">
+    <div class="spinner" id="spinner"></div>
+    <svg class="state-glyph" id="stateGlyph" viewBox="0 0 80 80" fill="none">
+      <circle cx="40" cy="40" r="36" stroke="#e8a020" stroke-width="1" stroke-dasharray="6 4"/>
+      <circle cx="40" cy="40" r="24" stroke="#1ad4c8" stroke-width="1" opacity="0.5"/>
+      <circle cx="40" cy="40" r="12" stroke="#2eff60" stroke-width="1" opacity="0.4"/>
+      <path d="M40 16 L44 28 L40 26 L36 28 Z" fill="#e8a020" opacity="0.8"/>
+      <path d="M40 64 L44 52 L40 54 L36 52 Z" fill="#e8a020" opacity="0.5"/>
+      <path d="M16 40 L28 36 L26 40 L28 44 Z" fill="#1ad4c8" opacity="0.6"/>
+      <path d="M64 40 L52 36 L54 40 L52 44 Z" fill="#1ad4c8" opacity="0.4"/>
+      <circle cx="40" cy="40" r="5" fill="#e8a020" opacity="0.8"/>
+    </svg>
+    <div class="state-title" id="stateTitle">The Oracle Awaits</div>
+    <div class="state-sub" id="stateSub">Enter any download listing URL above and Daxter will crack open the dark eco to retrieve images, titles, and links for you to browse.</div>
+  </div>
+  <div class="items-grid" id="itemsGrid"></div>
+</main>
+
+<footer>
+  <span>Daxter Browse</span> &nbsp;·&nbsp; Dark Eco Download Oracle &nbsp;·&nbsp; Precursor Technology &nbsp;·&nbsp; <span>Port Bayou Station</span>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// Spawn dark eco particles
+(function() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.setProperty('--dur', (6 + Math.random() * 12) + 's');
+    p.style.setProperty('--delay', (Math.random() * 10) + 's');
+    p.style.setProperty('--drift', ((Math.random() - 0.5) * 120) + 'px');
+    p.style.left = (Math.random() * 100) + 'vw';
+    p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+    p.style.opacity = Math.random() * 0.7;
+    container.appendChild(p);
+  }
+})();
+
+let allItems = [];
+
+function loadPreset(url) {
+  document.getElementById('urlInput').value = url;
+  doScrape();
+}
+
+async function doScrape() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('scrapeBtn');
+  const spinner = document.getElementById('spinner');
+  const stateGlyph = document.getElementById('stateGlyph');
+  const stateTitle = document.getElementById('stateTitle');
+  const stateSub = document.getElementById('stateSub');
+  const errMsg = document.getElementById('errMsg');
+  const grid = document.getElementById('itemsGrid');
+  const dot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const filterBar = document.getElementById('filterBar');
+  const pageTitleBar = document.getElementById('pageTitleBar');
+
+  // Reset
+  btn.disabled = true;
+  btn.textContent = '⬡ Scanning…';
+  errMsg.classList.remove('visible');
+  grid.innerHTML = '';
+  allItems = [];
+  filterBar.classList.remove('visible');
+  pageTitleBar.classList.remove('visible');
+  document.getElementById('statePanel').style.display = '';
+  stateGlyph.style.display = 'none';
+  spinner.classList.add('active');
+  stateTitle.textContent = 'Cracking Dark Eco…';
+  stateSub.textContent = 'Daxter is rummaging through the ruins. One moment…';
+  dot.classList.add('active');
+  statusText.textContent = 'Scanning ' + url;
+
+  try {
+    const resp = await fetch('/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Scrape failed');
+
+    allItems = data.items || [];
+
+    spinner.classList.remove('active');
+    stateGlyph.style.display = '';
+
+    if (allItems.length === 0) {
+      stateTitle.textContent = 'Eco Fields Are Barren';
+      stateSub.textContent = 'Daxter found nothing useful at that URL. Try a different download listing page.';
+      dot.classList.remove('active');
+      statusText.textContent = 'No items found';
+    } else {
+      document.getElementById('statePanel').style.display = 'none';
+      document.getElementById('pageTitleText').textContent = '⬡ ' + (data.pageTitle || url);
+      pageTitleBar.classList.add('visible');
+      filterBar.classList.add('visible');
+      dot.classList.remove('active');
+      statusText.innerHTML = `Retrieved <span class="status-count">${allItems.length}</span> items from oracle`;
+      applyFilter();
+    }
+  } catch (err) {
+    spinner.classList.remove('active');
+    stateGlyph.style.display = '';
+    stateTitle.textContent = 'Dark Eco Interference';
+    stateSub.textContent = 'The scan failed. This can happen with CORS restrictions. Try a different site.';
+    errMsg.textContent = '⚠ ' + err.message;
+    errMsg.classList.add('visible');
+    dot.classList.remove('active');
+    statusText.textContent = 'Scan failed';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬡ Scan';
+  }
+}
+
+function applyFilter() {
+  const q = document.getElementById('filterInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+  const grid = document.getElementById('itemsGrid');
+
+  let filtered = allItems.filter(item =>
+    !q || item.title.toLowerCase().includes(q) || (item.desc || '').toLowerCase().includes(q)
+  );
+
+  if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
+  else if (sort === 'za') filtered.sort((a, b) => b.title.localeCompare(a.title));
+  else if (sort === 'hasimg') filtered.sort((a, b) => (b.img ? 1 : 0) - (a.img ? 1 : 0));
+
+  document.getElementById('countLabel').textContent = filtered.length + ' items';
+
+  grid.innerHTML = '';
+  filtered.forEach((item, i) => {
+    const card = createCard(item, i);
+    grid.appendChild(card);
+  });
+}
+
+function getExtension(url) {
+  try {
+    const path = new URL(url).pathname;
+    const ext = path.split('.').pop().toLowerCase();
+    const known = ['iso','zip','tar','gz','exe','img','deb','rpm','pkg','dmg','xz','bz2'];
+    return known.includes(ext) ? ext : null;
+  } catch { return null; }
+}
+
+function createCard(item, idx) {
+  const card = document.createElement('div');
+  card.className = 'dl-card';
+  card.style.animationDelay = (idx * 0.04) + 's';
+
+  const ext = getExtension(item.href);
+
+  const imgHtml = item.img
+    ? `<img class="card-img" src="${escHtml(item.img)}" alt="${escHtml(item.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'card-img-placeholder\\'>${placeholderSvg()}</div>'">`
+    : `<div class="card-img-placeholder">${placeholderSvg()}</div>`;
+
+  const extBadge = ext ? `<span class="card-ext-badge">${ext}</span>` : '';
+
+  card.innerHTML = `
+    <div class="card-img-wrap">
+      ${imgHtml}
+      ${extBadge}
+    </div>
+    <div class="card-body">
+      <div class="card-title">${escHtml(item.title)}</div>
+      ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
+      <div class="card-footer">
+        <a class="card-link" href="${escHtml(item.href)}" target="_blank" rel="noopener">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M1 9L9 1M9 1H4M9 1V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Open Link
+        </a>
+        <button class="copy-btn" title="Copy URL" onclick="copyUrl('${escHtml(item.href).replace(/'/g,"\\'")}')">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 9H2a1 1 0 01-1-1V2a1 1 0 011-1h6a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+      </div>
+    </div>`;
+
+  return card;
+}
+
+function placeholderSvg() {
+  return `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="24" cy="24" r="20" stroke="#2eff60" stroke-width="1" opacity="0.4"/>
+    <path d="M24 12L28 20H24L20 20Z" fill="#2eff60" opacity="0.4"/>
+    <circle cx="24" cy="24" r="4" fill="#2eff60" opacity="0.3"/>
+  </svg>`;
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copyUrl(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('URL copied to clipboard'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// Enter key support
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doScrape();
+});
+</script>
+</body>
+</html>
